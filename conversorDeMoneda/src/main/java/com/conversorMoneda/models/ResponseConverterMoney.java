@@ -24,10 +24,6 @@ public class ResponseConverterMoney {
         return cambio;
     }
 
-    public double getCambiado() {
-        return cambiado;
-    }
-
     public void setCambiado(double cambiado) {
         this.cambiado = cambiado;
     }

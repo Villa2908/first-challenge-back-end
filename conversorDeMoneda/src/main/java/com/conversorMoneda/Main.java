@@ -2,9 +2,7 @@ package com.conversorMoneda;
 
 import com.conversorMoneda.DTOs.TipoMonedaDTO;
 import com.conversorMoneda.models.Moneda;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,65 +20,107 @@ public class Main {
         Scanner entrada = new Scanner(System.in);
         Moneda moneda = new Moneda();
         HashMap<String, String> listaMoneda = moneda.obtenerMonedas();
-        imprimirOpciones();
-        int user = entrada.nextInt();
         List<String> historial = new ArrayList<>();
-        try{
-            while (user < 4){
-                String resultado;
-                Scanner monedaELegir = new Scanner(System.in);
-                Scanner cantidadACambiar = new Scanner(System.in);
-                switch (user) {
-                    case 1:
-                        imprimirMonedas(listaMoneda);
-                        String monedaAConsultar = monedaELegir.nextLine().toUpperCase();
-                        System.out.println("Ahora escriba la moneda a consultar: ");
-                        String monedaConvertida = monedaELegir.nextLine().toUpperCase();
-                        resultado = moneda.obtenerValorMoneda(monedaAConsultar, monedaConvertida);
-                        System.out.println(resultado);
-                        historial.add(resultado + "\n"+ LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"))
-                                + " " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-                        break;
-                    case 2:
-                        imprimirMonedas(listaMoneda);
-                        String monedaAConvertir = monedaELegir.nextLine().toUpperCase();
-                        System.out.println("Cuanto desea cambiar: ");
-                        double cantidadCambio = cantidadACambiar.nextDouble();
-                        System.out.println("Ahora escribe la moneda a convertir: ");
-                        monedaConvertida = monedaELegir.nextLine().toUpperCase();
-                        resultado = moneda.convertirMoneda(monedaAConvertir, monedaConvertida, cantidadCambio);
-                        System.out.println(resultado);
-                        historial.add(resultado + "\n"+ LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"))
-                                + " " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-                        break;
-                    case 3:
-                        historial.forEach(item -> System.out.println(item + "\n"));
-                        break;
-                }
-                imprimirOpciones();
-                user = entrada.nextInt();
+        int eleccion = validarIngreso();
+        while (eleccion != 5)
+            switch (eleccion){
+                case 1:
+                    listaMoneda.forEach((simb, nomb)->{
+                        Moneda monedaDisponible = new Moneda(nomb, simb);
+                        System.out.println(monedaDisponible);
+                    });
+                    System.out.println("Ingrese las siglas de la moneda a consultar: ");
+                    String user = entrada.nextLine().toUpperCase().trim();
+                    while (user.length() < 3 || user.length() > 3){
+                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
+                        user = entrada.nextLine().trim();
+                    }
+                    String resultado = moneda.obtenerValoresDefecto(user) + "\n"
+                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
+                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
+                    historial.add(resultado);
+                    System.out.println(resultado);
+                    eleccion = validarIngreso();
+                    break;
+                case 2:
+                    listaMoneda.forEach((simb, nomb)->{
+                        Moneda monedaDisponible = new Moneda(nomb, simb);
+                        System.out.println(monedaDisponible);
+                    });
+                    System.out.println("Ingrese las siglas de la moneda a cambiar: ");
+                    String monedaCambiar = entrada.nextLine().toUpperCase().trim();
+
+                    System.out.println("Ingrese la cantidad a convertir: ");
+                    double cantidad = entrada.nextDouble();
+
+                    System.out.println("Ingrese las siglas de la moneda a convertir: ");
+                    String monedaConvertida = entrada.nextLine().toUpperCase().trim();
+
+                    while (monedaCambiar.length() < 3 || monedaCambiar.length() > 3){
+                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
+                        monedaCambiar = entrada.nextLine().trim();
+                    }
+                    while (monedaConvertida.length() < 3 || monedaConvertida.length() > 3){
+                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
+                        monedaConvertida = entrada.nextLine().trim();
+                    }
+                    String convertida = moneda.convertirMoneda(monedaCambiar, monedaConvertida,cantidad)  + "\n"
+                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
+                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
+                    historial.add(convertida);
+                    System.out.println(convertida);
+                    eleccion = validarIngreso();
+                    break;
+                case 3:
+                    listaMoneda.forEach((simb, nomb)->{
+                        Moneda monedaDisponible = new Moneda(nomb, simb);
+                        System.out.println(monedaDisponible);
+                    });
+                    System.out.println("Ingrese las siglas de la moneda a consultar: ");
+                    String monedaConsulta = entrada.nextLine().toUpperCase().trim();
+                    while (monedaConsulta.length() < 3 || monedaConsulta.length() > 3){
+                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
+                        monedaConsulta = entrada.nextLine().trim();
+                    }
+                    String resultadoConsulta = moneda.obtenerTodo(monedaConsulta) + "\n"
+                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
+                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
+                    historial.add(resultadoConsulta);
+                    System.out.println(resultadoConsulta);
+                    eleccion = validarIngreso();
+                    break;
+                case 4:
+                    System.out.println(historial);
+                    eleccion = validarIngreso();
+                    break;
             }
-        }catch (Exception e){
-            System.out.println("Vaya, ha ocurrido un error: " + e.getCause());
-        }
-        System.out.println("Muchas gracias por preferirnos!");
     }
-    public static void imprimirMonedas(Map<String,String> listaMoneda){
-        System.out.println("Monedas disponibles: ");
-        listaMoneda.forEach((simb, nomb) -> System.out.println("%s = %s".formatted(simb,nomb)));
-        System.out.println("Elija el codigo de la moneda a cambiar (USD,ARS,PEN):");
+    public static int validarIngreso(){
+        Scanner entrada = new Scanner(System.in);
+        while (true){
+            imprimirOpciones();
+            String user = entrada.nextLine().trim();
+            if(user.isEmpty() || Character.isLetter(user.charAt(0)) || user.length() > 1){
+                System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
+            } else if(Character.isDigit(user.charAt(0))){
+                if(Integer.parseInt(user) > 6){
+                    System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
+                } else {
+                    return Integer.parseInt(user);
+                }
+            }
+        }
     }
     public static void imprimirOpciones(){
         System.out.println("""
-                
                 ************************************************
                 Que desea realizar:
                 1 - Consulta una moneda
                 2 - Convertir una moneda a otra
-                3 - Consultar historial
-                4 - Salir
+                3 - Consultar mas monedas
+                4 - Consultar historial
+                5 - Salir
                 ************************************************
-                
                 """);
     }
 }
