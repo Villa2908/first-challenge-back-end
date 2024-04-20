@@ -10,6 +10,9 @@ public class ResponseConverterMoney {
         this.codigoBase = responseConverter.base_code();
         this.codidoCambio = responseConverter.target_code();
         this.cambio = responseConverter.conversion_rate();
+        if (!(responseConverter.conversion_result() == null)){
+            this.cambiado = responseConverter.conversion_result();
+        }
     }
 
     public void setNombreBase(String nombreBase) {
@@ -19,25 +22,14 @@ public class ResponseConverterMoney {
     public void setNombreCambio(String nombreCambio) {
         this.nombreCambio = nombreCambio;
     }
-
-    public double getCambio() {
-        return cambio;
+    public String obtenerTasa(){
+        return "%s (%s)\n%s (%s)\nvalor en (%s): %.2f".formatted(codigoBase, nombreBase, codidoCambio, nombreCambio,codidoCambio, cambio);
     }
-
-    public void setCambiado(double cambiado) {
-        this.cambiado = cambiado;
-    }
-
     @Override
     public String toString() {
         return "Moneda: " + codigoBase + " (%s)".formatted(nombreBase)
                 + "\nMoneda a cambiar: " + codidoCambio + " (%s)".formatted(nombreCambio)
                 +"\nCambio= " + cambio
-                +"\nTotal= " + cambiado;
-    }
-    public String obtenerTasa(){
-        return "Moneda: " + codigoBase + " (%s)".formatted(nombreBase)
-                + "\nMoneda a cambiar: " + codidoCambio + " (%s)".formatted(nombreCambio)
-                +"\nCambio= " + cambio;
+                +"\nTotal= %.2f".formatted(cambiado);
     }
 }

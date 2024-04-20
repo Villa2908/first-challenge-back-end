@@ -17,12 +17,15 @@ public class ResponseConsultMoney {
         return conversionValor;
     }
 
+    public String getResult(){
+        String resultado = monedaBase + "\n";
+        for (String tipo: conversionValor.keySet()){
+            resultado = resultado.concat("%s : %f \n".formatted(tipo, conversionValor.get(tipo)));
+        }
+        return resultado;
+    }
     public void setConversionValor(HashMap<String, Double> conversionValor) {
         this.conversionValor = conversionValor;
     }
 
-    @Override
-    public String toString() {
-        return "Moneda= " + monedaBase + "\nValores de monedas= " + conversionValor;
-    }
 }

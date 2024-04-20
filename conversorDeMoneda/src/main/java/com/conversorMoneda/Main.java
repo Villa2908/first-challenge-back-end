@@ -1,12 +1,7 @@
 package com.conversorMoneda;
 
-import com.conversorMoneda.DTOs.TipoMonedaDTO;
+import com.conversorMoneda.models.Historial;
 import com.conversorMoneda.models.Moneda;
-import com.google.gson.*;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 /**
  * @author VILLA
@@ -19,95 +14,114 @@ public class Main {
     public static void main(String[] args) {
         Scanner entrada = new Scanner(System.in);
         Moneda moneda = new Moneda();
-        HashMap<String, String> listaMoneda = moneda.obtenerMonedas();
-        List<String> historial = new ArrayList<>();
-        int eleccion = validarIngreso();
-        while (eleccion != 5)
-            switch (eleccion){
+        int user = validarIngresoOpciones();
+        String resultado;
+        List<Historial> historial = new ArrayList<>();
+        while (user != 7){
+            switch (user){
                 case 1:
-                    listaMoneda.forEach((simb, nomb)->{
-                        Moneda monedaDisponible = new Moneda(nomb, simb);
-                        System.out.println(monedaDisponible);
-                    });
-                    System.out.println("Ingrese las siglas de la moneda a consultar: ");
-                    String user = entrada.nextLine().toUpperCase().trim();
-                    while (user.length() < 3 || user.length() > 3){
-                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
-                        user = entrada.nextLine().trim();
-                    }
-                    String resultado = moneda.obtenerValoresDefecto(user) + "\n"
-                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
-                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
-                    historial.add(resultado);
+                    //Consulta basica de monedas a la API solo muestra 6 tipos de monedas
+                    imprimirMonedasBasicas();
+                    String consulta = validarIngresoDatos();
+                    resultado = moneda.obtenerValoresDefecto(consulta);
                     System.out.println(resultado);
-                    eleccion = validarIngreso();
+                    historial.add(new Historial(resultado));
                     break;
                 case 2:
-                    listaMoneda.forEach((simb, nomb)->{
-                        Moneda monedaDisponible = new Moneda(nomb, simb);
-                        System.out.println(monedaDisponible);
-                    });
-                    System.out.println("Ingrese las siglas de la moneda a cambiar: ");
-                    String monedaCambiar = entrada.nextLine().toUpperCase().trim();
-
-                    System.out.println("Ingrese la cantidad a convertir: ");
-                    double cantidad = entrada.nextDouble();
-
-                    System.out.println("Ingrese las siglas de la moneda a convertir: ");
-                    String monedaConvertida = entrada.nextLine().toUpperCase().trim();
-
-                    while (monedaCambiar.length() < 3 || monedaCambiar.length() > 3){
-                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
-                        monedaCambiar = entrada.nextLine().trim();
-                    }
-                    while (monedaConvertida.length() < 3 || monedaConvertida.length() > 3){
-                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
-                        monedaConvertida = entrada.nextLine().trim();
-                    }
-                    String convertida = moneda.convertirMoneda(monedaCambiar, monedaConvertida,cantidad)  + "\n"
-                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
-                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
-                    historial.add(convertida);
-                    System.out.println(convertida);
-                    eleccion = validarIngreso();
+                    //Consulta basica de tasa con las monedas basicas. 6 tipos de monedas igual
+                    //Se obtiene valor de la tasa y nombres de monedas
+                    imprimirMonedasBasicas();
+                    System.out.println("Ingrese el codigo de la moneda que desea cambiar:");
+                    String monedaACambiar = validarIngresoDatos();
+                    System.out.println("Ingrese ahora el codigo de la moneda a tasar:");
+                    String monedaTasa = validarIngresoDatos();
+                    resultado = moneda.obtenerTasaMoneda(monedaACambiar, monedaTasa);
+                    System.out.println(resultado);
+                    historial.add(new Historial(resultado));
                     break;
                 case 3:
-                    listaMoneda.forEach((simb, nomb)->{
-                        Moneda monedaDisponible = new Moneda(nomb, simb);
-                        System.out.println(monedaDisponible);
-                    });
-                    System.out.println("Ingrese las siglas de la moneda a consultar: ");
-                    String monedaConsulta = entrada.nextLine().toUpperCase().trim();
-                    while (monedaConsulta.length() < 3 || monedaConsulta.length() > 3){
-                        System.out.println("Lo siento, ingresó un codigo incorrecto. Intentelo de nuevo");
-                        monedaConsulta = entrada.nextLine().trim();
-                    }
-                    String resultadoConsulta = moneda.obtenerTodo(monedaConsulta) + "\n"
-                            + LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss")) + " "
-                            + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yy"));
-                    historial.add(resultadoConsulta);
-                    System.out.println(resultadoConsulta);
-                    eleccion = validarIngreso();
+                    //Obtienes la consulta con todas las monedas disponibles de la API
+                    System.out.println("Ingrese el codigo de la moneda");
+                    String monedaConsulta = validarIngresoDatos();
+                    resultado = moneda.obtenerTodoValor(monedaConsulta);
+                    System.out.println(resultado);
+                    historial.add(new Historial(resultado));
                     break;
                 case 4:
-                    System.out.println(historial);
-                    eleccion = validarIngreso();
+                    //Muestra en pantalla todas las monedas disponibles de la API
+                    HashMap<String, String> listaMonedas = moneda.obtenerMonedas();
+                    System.out.println("Estas monedas tenemos disponibles: ");
+                    listaMonedas.forEach((tipo, nombre) -> {
+                        System.out.println("%s (%s)".formatted(tipo, nombre));
+                    });
+                    historial.add(new Historial("Busqueda de monedas disponibles"));
                     break;
+                case 5:
+                    //Con ayuda de la API conviertes una cantidad deseada de moneda a otra
+                    imprimirMonedasBasicas();
+                    System.out.println("Ingrese el codigo de la moneda que desea cambiar:");
+                    String monedaCambio = validarIngresoDatos();
+                    System.out.println("Ingrese ahora la moneda a tasar:");
+                    String monedaTasada = validarIngresoDatos();
+                    double cantidad = validarIngresoMoneda();
+                    resultado = moneda.convertirMoneda(monedaCambio, monedaTasada, cantidad);
+                    System.out.println(resultado);
+                    historial.add(new Historial(resultado));
+                    break;
+                case 6:
+                    //Muestras el historial
+                    if (historial.size() > 0){
+                        historial.forEach(item -> System.out.println(item.toString()));
+                        break;
+                    } else {
+                        System.out.println("Aun no hay registros disponibles");
+                    }
+
             }
+            System.out.println("Presione cualquier tecla para continuar...");
+            entrada.nextLine();
+            user = validarIngresoOpciones();
+        }
+        System.out.println("Muchas gracias por preferirnos! Nos vemos pronto");
     }
-    public static int validarIngreso(){
+    public static int validarIngresoOpciones(){
         Scanner entrada = new Scanner(System.in);
         while (true){
             imprimirOpciones();
             String user = entrada.nextLine().trim();
-            if(user.isEmpty() || Character.isLetter(user.charAt(0)) || user.length() > 1){
-                System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
-            } else if(Character.isDigit(user.charAt(0))){
-                if(Integer.parseInt(user) > 6){
+            if(user.matches("^\\d{1}$")){
+                if (Integer.valueOf(user) > 7){
                     System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
-                } else {
+                }else {
                     return Integer.parseInt(user);
                 }
+            } else {
+                System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
+            }
+        }
+    }
+    public static String validarIngresoDatos(){
+        Scanner entrada = new Scanner(System.in);
+        while (true){
+            String user = entrada.nextLine().trim();
+            if(user.matches("^[a-zA-Z]{3}$")){
+                return user.toUpperCase();
+            }else{
+                System.out.println("El valor que ingresó no es admitido, intentelo de nuevo \n");
+            }
+        }
+    }
+
+    public static double validarIngresoMoneda(){
+        Scanner entrada = new Scanner(System.in);
+        System.out.println("Ingrese la cantidad que desea cambiar: ");
+        while (true){
+            String user = entrada.nextLine().trim();
+            user = user.replaceFirst(",",".");
+            if (user.matches("^\\d+(\\.\\d+)?$")) {
+                return Double.valueOf(user);
+            } else {
+                System.out.println("Número inválido. Por favor, ingrese un número válido.");
             }
         }
     }
@@ -116,11 +130,24 @@ public class Main {
                 ************************************************
                 Que desea realizar:
                 1 - Consulta una moneda
-                2 - Convertir una moneda a otra
+                2 - Consultar tasa de moneda
                 3 - Consultar mas monedas
-                4 - Consultar historial
-                5 - Salir
+                4 - Consultar las monedas disponibles
+                5 - Convertir cantidad de moneda
+                6 - Consultar historial
+                7 - Salir
                 ************************************************
                 """);
+    }
+    public static void imprimirMonedasBasicas(){
+        System.out.println("""
+                        Que moneda desea consultar:
+                        ARS - Peso argentino
+                        BOB - Boliviano boliviano
+                        BRL - Real brasileño
+                        CLP - Peso chileno
+                        COP - Peso colombiano
+                        USD - Dólar estadounidense
+                        """);
     }
 }
